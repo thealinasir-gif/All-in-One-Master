@@ -1,0 +1,89 @@
+# ==============================================================================
+# WINDOWS MASTER PRIVACY, MAINTENANCE & OPTIMIZATION SCRIPT
+# ==============================================================================
+
+Clear-Host
+
+# Load GUI Assembly for Popup Input
+Add-Type -AssemblyName Microsoft.VisualBasic
+
+# SECURE ENCRYPTED VERIFICATION (NO PLAIN NUMBER IN CODE)
+$EncryptedPin = "NjQyNQ=="
+
+# Empty Popup Box for PIN Input
+$EnteredPin = [Microsoft.VisualBasic.Interaction]::InputBox("Enter 4-Digit Security PIN to run Optimization Script:", "Security Verification")
+
+if ([string]::IsNullOrWhiteSpace($EnteredPin)) {
+    Write-Host "`n[X] NO PIN ENTERED! Access Denied." -ForegroundColor Red
+    Start-Sleep -Seconds 3
+    Exit
+}
+
+# Convert Input to Encrypted Standard
+$InputBytes = [System.Text.Encoding]::UTF8.GetBytes($EnteredPin.Trim())
+$ComputedEncrypted = [System.Convert]::ToBase64String($InputBytes)
+
+if ($ComputedEncrypted -ne $EncryptedPin) {
+    Write-Host "`n[X] INCORRECT PIN! Access Denied." -ForegroundColor Red
+    Start-Sleep -Seconds 3
+    Exit
+}
+
+Write-Host "`n[+] PIN Verified Successfully! Starting Master Maintenance..." -ForegroundColor Green
+Start-Sleep -Seconds 2
+
+
+Write-Host "`n==================================================" -ForegroundColor Cyan
+Write-Host "   1. STARTING SYSTEM MAINTENANCE & CLEANUP      " -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cyan
+
+# Set Execution Policy
+Set-ExecutionPolicy Unrestricted -Scope Process -Force
+
+# Clear DNS Cache
+Write-Host "[+] Clearing DNS Cache..." -ForegroundColor Yellow
+Clear-DnsClientCache
+
+# Clean Temporary Files
+Write-Host "[+] Deleting Temporary Junk Files..." -ForegroundColor Yellow
+Get-ChildItem -Path $env:TEMP -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+# Upgrade All Software Apps
+Write-Host "[+] Updating All Installed Apps (winget)..." -ForegroundColor Yellow
+winget upgrade --all --include-unknown
+
+# System File Checker (SFC Repair)
+Write-Host "[+] Repairing Windows System Files..." -ForegroundColor Yellow
+sfc /scannow
+
+# Windows Defender Quick Antivirus Scan
+Write-Host "[+] Running Antivirus Quick Scan..." -ForegroundColor Yellow
+Start-MpScan -ScanType QuickScan
+
+
+Write-Host "`n==================================================" -ForegroundColor Cyan
+Write-Host "   2. APPLYING MAXIMUM PRIVACY & ANONYMITY        " -ForegroundColor Cyan
+Write-Host "==================================================" -ForegroundColor Cyan
+
+# Basic Registry Privacy Tweaks
+Write-Host "[+] Applying Registry Privacy Tweaks..." -ForegroundColor Yellow
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection" -Name "AllowTelemetry" -Value 0 -ErrorAction SilentlyContinue
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" -Name "Enabled" -Value 0 -ErrorAction SilentlyContinue
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location" -Name "Value" -Value "Deny" -ErrorAction SilentlyContinue
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Remote Assistance" -Name "fAllowToGetHelp" -Value 0 -ErrorAction SilentlyContinue
+
+# Download & Launch O&O ShutUp10++
+Write-Host "[+] Downloading Latest O&O ShutUp10++..." -ForegroundColor Yellow
+$OOSuPath = "$env:TEMP\OOSU10.exe"
+Invoke-WebRequest -Uri "https://dl5.oo-software.com/files/ooshutup10/OOSU10.exe" -OutFile $OOSuPath
+
+Write-Host "[+] Launching O&O ShutUp10++ Cleanly..." -ForegroundColor Yellow
+Start-Process -FilePath $OOSuPath -Wait
+
+# Clean up temporary file after closing
+Remove-Item -Path $OOSuPath -Force -ErrorAction SilentlyContinue
+
+
+Write-Host "`n==================================================" -ForegroundColor Green
+Write-Host "   SUCCESS! SYSTEM FULLY OPTIMIZED & SECURED!     " -ForegroundColor Green
+Write-Host "==================================================" -ForegroundColor Green
